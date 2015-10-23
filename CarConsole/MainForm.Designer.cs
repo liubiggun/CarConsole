@@ -33,6 +33,7 @@
             this.button_Open = new System.Windows.Forms.Button();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel_PostState = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel_ImgRecvState = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel_NowTime = new System.Windows.Forms.ToolStripStatusLabel();
             this.checkBox_W = new System.Windows.Forms.CheckBox();
@@ -84,6 +85,8 @@
             this.button_ChangeMode = new System.Windows.Forms.Button();
             this.comboBox_Mode = new System.Windows.Forms.ComboBox();
             this.label_ImgCount = new System.Windows.Forms.Label();
+            this.label_ImgrestCount = new System.Windows.Forms.Label();
+            this.textBox_FPS = new System.Windows.Forms.TextBox();
             this.statusStrip1.SuspendLayout();
             this.groupBox_Control.SuspendLayout();
             this.groupBox_Receive.SuspendLayout();
@@ -107,6 +110,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel_PostState,
+            this.toolStripStatusLabel_ImgRecvState,
             this.toolStripStatusLabel2,
             this.toolStripStatusLabel_NowTime});
             this.statusStrip1.Location = new System.Drawing.Point(0, 446);
@@ -121,10 +125,16 @@
             this.toolStripStatusLabel_PostState.Size = new System.Drawing.Size(32, 17);
             this.toolStripStatusLabel_PostState.Text = "就绪";
             // 
+            // toolStripStatusLabel_ImgRecvState
+            // 
+            this.toolStripStatusLabel_ImgRecvState.Name = "toolStripStatusLabel_ImgRecvState";
+            this.toolStripStatusLabel_ImgRecvState.Size = new System.Drawing.Size(128, 17);
+            this.toolStripStatusLabel_ImgRecvState.Text = "正在监听服务器的连接";
+            // 
             // toolStripStatusLabel2
             // 
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(755, 17);
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(627, 17);
             this.toolStripStatusLabel2.Spring = true;
             // 
             // toolStripStatusLabel_NowTime
@@ -644,17 +654,36 @@
             // label_ImgCount
             // 
             this.label_ImgCount.AutoSize = true;
-            this.label_ImgCount.Location = new System.Drawing.Point(394, 398);
+            this.label_ImgCount.Location = new System.Drawing.Point(426, 398);
             this.label_ImgCount.Name = "label_ImgCount";
             this.label_ImgCount.Size = new System.Drawing.Size(65, 12);
             this.label_ImgCount.TabIndex = 8;
             this.label_ImgCount.Text = "图片数量：";
+            // 
+            // label_ImgrestCount
+            // 
+            this.label_ImgrestCount.AutoSize = true;
+            this.label_ImgrestCount.Location = new System.Drawing.Point(426, 418);
+            this.label_ImgrestCount.Name = "label_ImgrestCount";
+            this.label_ImgrestCount.Size = new System.Drawing.Size(65, 12);
+            this.label_ImgrestCount.TabIndex = 8;
+            this.label_ImgrestCount.Text = "剩余数量：";
+            // 
+            // textBox_FPS
+            // 
+            this.textBox_FPS.Location = new System.Drawing.Point(365, 395);
+            this.textBox_FPS.Name = "textBox_FPS";
+            this.textBox_FPS.Size = new System.Drawing.Size(30, 21);
+            this.textBox_FPS.TabIndex = 9;
+            this.textBox_FPS.Text = "30";
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(950, 468);
+            this.Controls.Add(this.textBox_FPS);
+            this.Controls.Add(this.label_ImgrestCount);
             this.Controls.Add(this.label_ImgCount);
             this.Controls.Add(this.comboBox_Mode);
             this.Controls.Add(this.tabControl1);
@@ -752,6 +781,9 @@
         private System.Windows.Forms.Button button_ChangeMode;
         private System.Windows.Forms.ComboBox comboBox_Mode;
         private System.Windows.Forms.Label label_ImgCount;
+        private System.Windows.Forms.Label label_ImgrestCount;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel_ImgRecvState;
+        private System.Windows.Forms.TextBox textBox_FPS;
     }
 }
 

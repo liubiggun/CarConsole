@@ -36,9 +36,10 @@ namespace CarConsole
             Image frame;
             while (true)
             {
-                if (ImgReceiver.NeedStop == true)
+                if (ImgReceiver.NeedStop == true && ImgReceiver.ImgQueue.Count == 0)
                     break;
                 succeeded = ImgReceiver.ImgQueue.TryDequeue(out frame);
+                              
                 if (succeeded)
                 {                   
                     this.DisplayImg(frame, this.pictureBox1);

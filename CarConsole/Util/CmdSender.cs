@@ -195,17 +195,20 @@ namespace CarConsole.Util
 
         /// <summary>
         /// 控制图像输出模式
-        /// </summary>
-        /// <param name="tag">控制获取图像数据，第一个参数是客户端要接收数据的TCP端口,
-        /// 数字字符串长度不足5则补零，^打开图像传输，$关闭图像传输，0是获取双目数据，
-        /// 1是左边摄像头，2则右边？查询状态，服务器返回客户端0 1 2 或 $</param>
-        public void ControlImgSender(string imgport, string tag)
+        /// </summary>        
+        public void ControlImgSender(string firstpart, string tag)
         { 
-            //   字头       栈长度    命令字          数据        校验码    结束字节
-            //0x66  0xaa     0x07      0xff         "65535;0"    0xcc     0xfc   
+            /*   字头       栈长度    命令字          数据        校验码    结束字节
+              0x66  0xaa     0x07      0xff         "65535;0"    0xcc     0xfc 
+            控制获取图像数据，有两种类型的命令数据，分号区分参数。
+            第一种是启动或关闭图像传输：此时，第一个参数是客户端要接收数据的TCP端口，数字字符串长度不足5则补空格。而第二个参数
+            则是^ & *打开传输模式：^打开双目图像传输，&打开其中一个摄像头的图像传输(id:1)*打开另一个(id:0), $关闭图像传输
+            ?查询状态，服务器返回客户端"30;0"，第一个参数是帧数，第二个参数是当前传输的模式(0,1,2,&)
+            第二种是修改图像传输模式："   30;1"第一个参数是帧数，长度不足5补空格，第二个参数是获取模式，
+            0是获取双目数据，1是左边摄像头，2则右边。*/
             
             List<byte> cmd = new List<byte>(this.HeadBytes);
-            string data = Encoding.ASCII.GetString(new byte[2] { 0x07, 0x7f }) + imgport + ';' + tag;
+            string data = Encoding.ASCII.GetString(new byte[2] { 0x07, 0x7f }) + firstpart + ';' + tag;
 
             cmd.AddRange(Encoding.ASCII.GetBytes(data));
             cmd.AddRange(new byte[2] { this.Char_CheckSum(data), this.EndByte });

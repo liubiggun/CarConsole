@@ -31,6 +31,14 @@ namespace CarConsole.ClassLib
         /// 获取的图片总数
         /// </summary>
         public static int Imgtotal = 0;
+        /// <summary>
+        /// 图片队列剩下的图片总数
+        /// </summary>
+        public static int Imgrest = 0;
+        /// <summary>
+        /// 简单通知主窗体接收图片的状态
+        /// </summary>
+        public static string TellMainForm = "";
 
         /// <summary>
         /// 一个生产者函数，接收对端传过来的图像并将其放入队列中
@@ -44,15 +52,16 @@ namespace CarConsole.ClassLib
             this.listener = new TcpListener(System.Net.IPAddress.Parse(host), port);
             listener.Start();
             List<byte> lenbuffer = new List<byte>(16);
-
-            TcpClient client = listener.AcceptTcpClient();        //接受客户端的连接，利用client保存连接的客户端           
+            TellMainForm = "正在监听服务器的连接!";
+            TcpClient client = listener.AcceptTcpClient();        //接受客户端的连接，利用client保存连接的客户端   
+            TellMainForm = "接收到服务器的连接，开始接收图像!";
             NetworkStream clientStream = client.GetStream();      //获取客户端的流stream
             
             int recvlen = 0;                                      //接收数据的长度
             int len = 0;                                          //当前接收图片的长度
             //clientStream.ReadTimeout = 10;
 
-            //循环接收一帧帧的图片
+            //循环接收一帧帧的图片（一应一答接收）
             while (true)
             {
                 byte[] temp = new byte[16];
@@ -60,6 +69,7 @@ namespace CarConsole.ClassLib
                 if (NeedStop) break;
                 try
                 {
+                    client.Client.Send(new byte[1] { 0xaa });
                     while (recvlen != 16)
                     {
                         recvlen += clientStream.Read(temp, 0, 16);                      //先读取图片长度
@@ -90,7 +100,9 @@ namespace CarConsole.ClassLib
                 System.IO.MemoryStream ms = new System.IO.MemoryStream(imgbuffer.ToArray());
                 Image img = System.Drawing.Bitmap.FromStream(ms);
                 ImgQueue.Enqueue(img);
+                
                 Imgtotal += 1;
+                Imgrest = ImgQueue.Count;
 
                 recvlen = 0;//清除接收数据的长度
                 len = 0;//清除图片的长度

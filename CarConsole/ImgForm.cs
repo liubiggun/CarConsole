@@ -13,8 +13,10 @@ using System.Drawing;
 
 namespace CarConsole
 {
-    public partial class ImgForm : SingleImgForm
+    public partial class ImgForm : Form
     {
+        public Thread imgConsumer;
+
         public ImgForm()
         {
             InitializeComponent();
@@ -63,6 +65,27 @@ namespace CarConsole
                     }    
                 }
             }            
+        }
+
+        private delegate void delegateDisplayImg(Image img, PictureBox box);
+        public void DisplayImg(Image img, PictureBox box)
+        {
+            try
+            {
+                if (!box.InvokeRequired)        //如果调用该函数的线程和控件位于同一个线程内
+                {
+                    box.Image = img;
+                }
+                else                                        //如果调用该函数的线程和控件不在同一个线程内
+                {
+                    this.Invoke(new delegateDisplayImg(DisplayImg), img, box);
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
         }
 
         private delegate void delegateHideImg(PictureBox box);

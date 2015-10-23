@@ -34,8 +34,6 @@ namespace CarConsole
         ImgForm imgForm = new ImgForm();
         SingleImgForm singleImgForm = new SingleImgForm();
 
-        bool ifdouble = false;
-
         /// <summary>
         /// 方向按键标识,四位分别对应wsad
         /// </summary>
@@ -144,6 +142,8 @@ namespace CarConsole
         private void timer_key_Tick(object sender, EventArgs e)
         {
             this.label_ImgCount.Text = "图片数量：" + ImgReceiver.Imgtotal;
+            this.label_ImgrestCount.Text = "剩下数量" + ImgReceiver.Imgrest;
+            this.toolStripStatusLabel_ImgRecvState.Text = ImgReceiver.TellMainForm;
             
             if (KeyPreview)//按键事件有效时
             { 
@@ -344,6 +344,7 @@ namespace CarConsole
 
         private void button_Test_Click(object sender, EventArgs e)
         {
+            //测试窗口消费接收到的图片
             /*if (!this.imgProducer.IsAlive)
             {
                 this.button_Connect_Click(sender, e);
@@ -364,8 +365,22 @@ namespace CarConsole
                 this.imgForm.ConsumeImg();
             }*/
 
-            //测试接收图片
-            this.imgReciever.ProduceImgAfterRecv("127.0.0.1", int.Parse(this.imgPort));
+            //测试本机ImgSender发送图片，本机在对应端口接收图片
+            //this.imgReciever.ProduceImgAfterRecv("127.0.0.1", int.Parse(this.imgPort));
+
+            //测试：小车连接360wifi并使用TCP连接电脑172.28.32.1，看是否被172.28.32.1拒绝
+            //若使用127.0.0.1监听的话，本机监听的是202.193.9.83，并不是360wifi的地址
+            //由于小车连接的是360wifi网关，似乎连不到上层设备，导致小车链接不到127.0.0.1即
+            //202.193.9.83的端口。所以这里说明客户端应该监听正确的地址，否则连接不上
+            //this.imgReciever.ProduceImgAfterRecv("127.0.0.1", int.Parse(this.imgPort));//wrong
+            this.imgReciever.ProduceImgAfterRecv("172.28.32.1", int.Parse(this.imgPort));//right
+
+            //测试本机连接小车上的服务器并接收图片
+            /*this.cmdSender.Net.ConnectServer("172.28.32.3", int.Parse(this.textBox_PORT.Text));
+            this.button_SendPin1_Click(sender, e);
+            this.cmdSender.ControlImgSender(this.imgPort, "&");
+            //测试小车发送图片后，此处接收图片
+            this.imgReciever.ProduceImgAfterRecv("127.0.0.1", int.Parse(this.imgPort));*/
             
         }
 
@@ -388,10 +403,11 @@ namespace CarConsole
         {
             if (!this.imgProducer.IsAlive)
             {               
-                //启动获取图像线程
+                //启动接收图像线程
                 this.imgProducer = new Thread(() =>
                 {
-                    this.imgReciever.ProduceImgAfterRecv("127.0.0.1", int.Parse(this.imgPort));
+                    //this.imgReciever.ProduceImgAfterRecv("127.0.0.1", int.Parse(this.imgPort));
+                    this.imgReciever.ProduceImgAfterRecv("172.28.32.1", int.Parse(this.imgPort));
                 });
                 ImgReceiver.NeedStop = false;
                 imgProducer.IsBackground = true;
@@ -399,39 +415,26 @@ namespace CarConsole
 
                 System.Threading.Thread.Sleep(300);
 
-                //多模式
-                if (ifdouble)
+                //注意，带宽不足时，第二个摄像可能会没数据
+                ImgReceiver.Mode = this.comboBox_Mode.SelectedIndex;
+                switch (ImgReceiver.Mode)
                 {
-                    //注意，带宽不足时，第二个摄像可能会没数据
-                    ImgReceiver.Mode = 2;
-                    switch (ImgReceiver.Mode)
-                    {
-                        case 0: this.cmdSender.ControlImgSender(this.imgPort, "^"); break;
-                        case 1: this.cmdSender.ControlImgSender(this.imgPort, "&"); break;   //对应编号为1
-                        case 2: this.cmdSender.ControlImgSender(this.imgPort, "*"); break;   //对应编号为0
-                    }
+                    case 0: this.cmdSender.ControlImgSender(this.imgPort, "^"); break;
+                    case 1: this.cmdSender.ControlImgSender(this.imgPort, "&"); break;   //对应编号为1
+                    case 2: this.cmdSender.ControlImgSender(this.imgPort, "*"); break;   //对应编号为0
+                }
+
+                this.singleImgForm = new SingleImgForm();
+                this.singleImgForm.Show();
+                if (!this.singleImgForm.imgConsumer.IsAlive)
+                    this.singleImgForm.imgConsumer.Start();
 
 
-                    this.imgForm = new ImgForm();
-                    this.imgForm.Show();
-                    if (!this.imgForm.imgConsumer.IsAlive)
-                        this.imgForm.imgConsumer.Start();
-                }
-                else
-                {
-                    //单目，打开默认的摄像头
-                    this.cmdSender.ControlImgSender(this.imgPort, "*");
-                    this.singleImgForm = new SingleImgForm();
-                    this.singleImgForm.Show();
-                    if (!this.singleImgForm.imgConsumer.IsAlive)
-                        this.singleImgForm.imgConsumer.Start();
-                }
             }
             else 
             {
                 MessageBox.Show("图像已在获取并接收", "提示", MessageBoxButtons.OK, MessageBoxIcon.Stop);
             }
-
         }
 
         /// <summary>
@@ -442,10 +445,8 @@ namespace CarConsole
             this.cmdSender.ControlImgSender(this.imgPort, "$");
             ImgReceiver.NeedStop = true;
             ImgReceiver.Imgtotal = 0;
-            if (ifdouble)
-                this.imgForm.Hide();
-            else
-                this.singleImgForm.Hide();
+            ImgReceiver.TellMainForm = "";
+            this.singleImgForm.Hide();
         }
 
         private void button_QueryMode_Click(object sender, EventArgs e)
@@ -455,7 +456,8 @@ namespace CarConsole
 
         private void button_ChangeMode_Click(object sender, EventArgs e)
         {
-            this.cmdSender.ControlImgSender(this.imgPort, this.comboBox_Mode.SelectedItem.ToString());
+            string text = String.Format("{0,-5}", this.textBox_FPS.Text);
+            this.cmdSender.ControlImgSender(text, this.comboBox_Mode.SelectedItem.ToString());
             ImgReceiver.Mode = this.comboBox_Mode.SelectedIndex;
         }
 
